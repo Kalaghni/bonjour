@@ -1,6 +1,6 @@
 {
-  "name": "bonjour",
-  "version": "3.5.0",
+  "name": "@joshtwc/bonjour",
+  "version": "3.6.2",
   "description": "A Bonjour/Zeroconf implementation in pure JavaScript",
   "main": "index.js",
   "dependencies": {
@@ -21,7 +21,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/watson/bonjour.git"
+    "url": "https://github.com/joshtwc/bonjour.git"
   },
   "keywords": [
     "bonjour",
@@ -39,11 +39,14 @@
   "author": "Thomas Watson Steen <w@tson.dk> (https://twitter.com/wa7son)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/watson/bonjour/issues"
+    "url": "https://github.com/joshtwc/bonjour/issues"
   },
-  "homepage": "https://github.com/watson/bonjour",
+  "homepage": "https://github.com/joshtwc/bonjour",
   "coordinates": [
     55.68250900965318,
     12.586377442991648
-  ]
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
 }
