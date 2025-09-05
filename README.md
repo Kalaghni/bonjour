@@ -35,7 +35,9 @@
 
 ## Installation
 
+```bash
     npm i @joshtwc/bonjour
+```
 
 ## Requirements
 
@@ -46,6 +48,7 @@
 
 ### Publish a service
 
+```ts
     import { Bonjour } from '@joshtwc/bonjour';
     import crypto from 'node:crypto';
     
@@ -65,9 +68,11 @@
       bonjour.destroy();
       process.exit(0);
     });
+```
 
 ### Discover services
 
+```ts
     import { Bonjour } from '@joshtwc/bonjour';
     
     const bonjour = new Bonjour();
@@ -79,22 +84,22 @@
     
     // actively query now (already called on start, but you can poke again)
     browser.update();
+```
 
 ### CommonJS usage
 
+```js
     const { Bonjour } = require('@joshtwc/bonjour');
     const bonjour = new Bonjour();
+```
 
 ## API
 
 ### Bonjour
 
-Constructor
-
-    new Bonjour(options?)
-
 Options
 
+```
     type?: 'udp4' | 'udp6'        // default: 'udp4'
     interface?: string            // bind to a specific local IP (e.g., '192.168.1.10')
     reuseAddr?: boolean           // default: true
@@ -102,6 +107,7 @@ Options
     domain?: string               // default: 'local'
     instanceId?: string           // override per-process TXT id (for self-ignore)
     jitter?: boolean              // add small TTL jitter; default: true
+```
 
 Methods
 
