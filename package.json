@@ -1,52 +1,68 @@
 {
   "name": "@joshtwc/bonjour",
-  "version": "3.6.2",
-  "description": "A Bonjour/Zeroconf implementation in pure JavaScript",
-  "main": "index.js",
-  "dependencies": {
-    "array-flatten": "^2.1.0",
-    "deep-equal": "^1.0.1",
-    "dns-equal": "^1.0.0",
-    "dns-txt": "^2.0.2",
-    "multicast-dns": "^7.2.5",
-    "multicast-dns-service-types": "^1.1.0"
-  },
-  "devDependencies": {
-    "after-all": "^2.0.2",
-    "standard": "^17.1.2",
-    "tape": "^4.5.1"
-  },
-  "scripts": {
-    "test": "standard && tape test/*.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/joshtwc/bonjour.git"
-  },
+  "version": "4.0.2",
+  "description": "A from-scratch, bonjour-like (mDNS + DNS-SD) library built on multicast-dns. Active discovery, proper goodbyes, self-ignore by TXT id, Windows-friendly.",
   "keywords": [
     "bonjour",
     "zeroconf",
-    "zero",
-    "configuration",
     "mdns",
-    "dns",
-    "service",
-    "discovery",
+    "dns-sd",
     "multicast",
-    "broadcast",
-    "dns-sd"
+    "service-discovery",
+    "electron",
+    "windows"
   ],
-  "author": "Thomas Watson Steen <w@tson.dk> (https://twitter.com/wa7son)",
-  "license": "MIT",
+  "homepage": "https://github.com/joshtwc/bonjour#readme",
   "bugs": {
     "url": "https://github.com/joshtwc/bonjour/issues"
   },
-  "homepage": "https://github.com/joshtwc/bonjour",
-  "coordinates": [
-    55.68250900965318,
-    12.586377442991648
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/joshtwc/bonjour.git"
+  },
+  "license": "ISC",
+  "author": "Josh Wood",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs",
+      "default": "./dist/index.mjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist/**",
+    "README.md",
+    "LICENSE"
   ],
+  "scripts": {
+    "clean": "rimraf dist",
+    "build": "tsup src/index.ts --format cjs,esm --dts --minify --sourcemap --clean --out-dir dist --target node18",
+    "dev": "tsup src/bonjour.ts --format cjs,esm --dts --watch --sourcemap --out-dir dist --target node18",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "prepublishOnly": "npm run build",
+    "test": "node -e \"console.log('no tests yet')\""
+  },
+  "devDependencies": {
+    "@types/multicast-dns": "^7.2.4",
+    "@types/node": "^24.3.1",
+    "rimraf": "^6.0.1",
+    "tsup": "^8.1.0",
+    "typescript": "^5.6.2"
+  },
+  "dependencies": {
+    "multicast-dns": "^7.2.5"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "sideEffects": false
 }

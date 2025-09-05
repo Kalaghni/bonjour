@@ -1,181 +1,142 @@
-# bonjour
-
-A Bonjour/Zeroconf protocol implementation in pure JavaScript. Publish
-services on the local network or discover existing services using
-multicast DNS.
-
-[![Build status](https://travis-ci.org/watson/bonjour.svg?branch=master)](https://travis-ci.org/watson/bonjour)
-[![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat)](https://github.com/feross/standard)
-
-## Installation
-
-```
-npm install bonjour
-```
-
-## Usage
-
-```js
-var bonjour = require('bonjour')()
-
-// advertise an HTTP server on port 3000
-bonjour.publish({ name: 'My Web Server', type: 'http', port: 3000 })
-
-// browse for all http services
-bonjour.find({ type: 'http' }, function (service) {
-  console.log('Found an HTTP server:', service)
-})
-```
-
-## API
-
-### Initializing
-
-```js
-var bonjour = require('bonjour')([options])
-```
-
-The `options` are optional and will be used when initializing the
-underlying multicast-dns server. For details see [the multicast-dns
-documentation](https://github.com/mafintosh/multicast-dns#mdns--multicastdnsoptions).
-
-### Publishing
-
-#### `var service = bonjour.publish(options)`
-
-Publishes a new service.
-
-Options are:
-
-- `name` (string)
-- `host` (string, optional) - defaults to local hostname
-- `port` (number)
-- `type` (string)
-- `subtypes` (array of strings, optional)
-- `protocol` (string, optional) - `udp` or `tcp` (default)
-- `txt` (object, optional) - a key/value object to broadcast as the TXT
-  record
-
-IANA maintains a [list of official service types and port
-numbers](http://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xhtml).
-
-#### `bonjour.unpublishAll([callback])`
-
-Unpublish all services. The optional `callback` will be called when the
-services have been unpublished.
-
-#### `bonjour.destroy()`
-
-Destroy the mdns instance. Closes the udp socket.
-
-### Browser
-
-#### `var browser = bonjour.find(options[, onup])`
-
-Listen for services advertised on the network. An optional callback can
-be provided as the 2nd argument and will be added as an event listener
-for the `up` event.
-
-Options (all optional):
-
-- `type` (string)
-- `subtypes` (array of strings)
-- `protocol` (string) - defaults to `tcp`
-- `txt` (object) - passed into [dns-txt
-  module](https://github.com/watson/dns-txt) contructor. Set to `{
-  binary: true }` if you want to keep the TXT records in binary
-
-#### `var browser = bonjour.findOne(options[, callback])`
-
-Listen for and call the `callback` with the first instance of a service
-matching the `options`. If no `callback` is given, it's expected that
-you listen for the `up` event. The returned `browser` will automatically
-stop it self after the first matching service.
-
-Options are the same as given in the `browser.find` function.
-
-#### `Event: up`
-
-Emitted every time a new service is found that matches the browser.
-
-#### `Event: down`
-
-Emitted every time an existing service emmits a goodbye message.
-
-#### `browser.services`
-
-An array of services known by the browser to be online.
-
-#### `browser.start()`
-
-Start looking for matching services.
-
-#### `browser.stop()`
-
-Stop looking for matching services.
-
-#### `browser.update()`
-
-Broadcast the query again.
-
-### Service
-
-#### `Event: up`
-
-Emitted when the service is up.
-
-#### `Event: error`
-
-Emitted if an error occurrs while publishing the service.
-
-#### `service.stop([callback])`
-
-Unpublish the service. The optional `callback` will be called when the
-service have been unpublished.
-
-#### `service.start()`
-
-Publish the service.
-
-#### `service.name`
-
-The name of the service, e.g. `Apple TV`.
-
-#### `service.type`
-
-The type of the service, e.g. `http`.
-
-#### `service.subtypes`
-
-An array of subtypes. Note that this property might be `null`.
-
-#### `service.protocol`
-
-The protocol used by the service, e.g. `tcp`.
-
-#### `service.host`
-
-The hostname or ip address where the service resides.
-
-#### `service.port`
-
-The port on which the service listens, e.g. `5000`.
-
-#### `service.fqdn`
-
-The fully qualified domain name of the service. E.g. if given the name
-`Foo Bar`, the type `http` and the protocol `tcp`, the `service.fqdn`
-property will be `Foo Bar._http._tcp.local`.
-
-#### `service.txt`
-
-The TXT record advertised by the service (a key/value object). Note that
-this property might be `null`.
-
-#### `service.published`
-
-A boolean indicating if the service is currently published.
-
-## License
-
-MIT
+# @joshtwc/bonjour
+
+A tiny, from-scratch Bonjour/ZeroConf (mDNS + DNS-SD) library built directly on multicast-dns.
+API is intentionally familiar if you’ve used bonjour/bonjour-service:
+
+- new Bonjour(opts?)
+- bonjour.publish({...}) → Service
+- bonjour.find({ type, protocol? }, onUp?) → Browser
+- browser.on('up' | 'down', fn) · browser.update() · browser.stop()
+- service.start() · service.stop()
+- bonjour.destroy()
+
+Why this exists
+- Works reliably on Windows (multi-NIC friendly): binds to your LAN IPv4 by default.
+- Active discovery on start (no “only appears when a new device starts” issue).
+- Sends proper goodbyes (TTL=0) on shutdown.
+- Ignores its own adverts by a TXT id, so multiple instances on the same host don’t see themselves.
+- Zero runtime deps besides multicast-dns.
+
+Install
+
+    npm i @joshtwc/bonjour
+
+Node 18+ is recommended.
+
+Quick start
+
+Publish a service
+
+    import { Bonjour } from '@joshtwc/bonjour';
+    const bonjour = new Bonjour();
+    const service = bonjour.publish({
+      name: 'Paperless ' + crypto.randomUUID(),
+      type: 'twc-paperless',     // -> _twc-paperless._tcp.local
+      protocol: 'tcp',
+      port: 3003,
+      txt: { version: '1.2.3' }  // a TXT "id" is added automatically for self-ignore
+    });
+    // Stop on exit
+    process.on('SIGINT', () => {
+      service.stop();
+      bonjour.destroy();
+      process.exit(0);
+    });
+
+Discover services
+
+    import { Bonjour } from '@joshtwc/bonjour';
+    const bonjour = new Bonjour();
+    const browser = bonjour.find({ type: 'twc-paperless', protocol: 'tcp' });
+    browser.on('up',   (svc) => { console.log('UP', svc.name, svc.host, svc.port, svc.txt); });
+    browser.on('down', (svc) => { console.log('DOWN', svc.name); });
+    // actively query now (already called on start, but you can poke again)
+    browser.update();
+
+CommonJS usage
+
+    const { Bonjour } = require('@joshtwc/bonjour');
+    const bonjour = new Bonjour();
+
+API
+
+new Bonjour(opts?)
+
+    type BonjourOptions = {
+      type?: 'udp4' | 'udp6';        // default: 'udp4'
+      interface?: string;            // bind to a specific local IP (e.g., '192.168.1.10')
+      reuseAddr?: boolean;           // default: true
+      loopback?: boolean;            // default: true
+      domain?: string;               // default: 'local'
+      instanceId?: string;           // override per-process TXT id (for self-ignore)
+      jitter?: boolean;              // add small TTL jitter; default: true
+    };
+
+On Windows with Hyper-V/WSL/VPN adapters, you may want to pass interface: '192.168.x.x'.
+
+bonjour.publish(options) → Service
+
+    type PublishOptions = {
+      name: string;                  // instance label (left of the service type)
+      type: string;                  // e.g., 'http' -> _http._tcp.local
+      port: number;
+      protocol?: 'tcp' | 'udp';      // default: 'tcp'
+      host?: string;                 // SRV target hostname (default: "<machine>.local")
+      txt?: Record<string, string | number | boolean>;
+      subtypes?: string[];
+      domain?: string;               // default: 'local'
+      disableIPv6?: boolean;         // default: true
+      ttl?: number;                  // default: 120
+    };
+
+Returns a Service with:
+- start() – begin advertising (called automatically by publish)
+- stop() – send goodbye (TTL=0) and stop advertising
+- events: 'error'
+
+This implementation automatically injects a TXT id=<uuid> to support self-ignore.
+
+bonjour.find(options?, onUp?) → Browser
+
+    type FindOptions = {
+      type?: string;                 // if omitted, wildcard discovery of types is used
+      protocol?: 'tcp' | 'udp';      // default: 'tcp'
+      domain?: string;               // default: 'local'
+      subtypes?: string[];
+    };
+
+    browser.on('up', (service) => { /* ... */ })
+    browser.on('down', (service) => { /* ... */ })
+    browser.update();                // actively query now (PTR)
+    browser.stop();
+
+service object
+
+    type ServiceUp = {
+      name: string;                  // instance label
+      fqdn: string;                  // full instance name
+      host: string;                  // SRV target hostname
+      port: number;
+      addresses: string[];           // A/AAAA addresses observed
+      txt: Record<string, string>;   // parsed TXT
+    };
+
+bonjour.destroy()
+
+Closes the underlying mDNS socket and removes listeners.
+
+Notes & tips
+- Don’t set host to an IP. SRV target should be a hostname (e.g., myhost.local); A/AAAA records carry the IPs.
+- Windows firewall: Ensure your app can receive unicast UDP replies. Private network profile is best.
+- IPv6: This lib advertises A (IPv4) by default. If you need v6-only peers, extend to add AAAA records and/or run with type: 'udp6'.
+
+Migration
+From bonjour / bonjour-service:
+- new Bonjour() is similar.
+- publish({ name, type, port, txt }) and find({ type, protocol }) are compatible.
+- This library actively queries on start, so you’ll get 'up' events for existing services immediately.
+- Self-ignore is by TXT id, so multiple instances on the same host won’t see themselves even if they share a hostname.
+
+License
+
+ISC © Josh Wood
