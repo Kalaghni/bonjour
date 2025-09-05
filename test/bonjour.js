@@ -1,18 +1,18 @@
 'use strict'
 
-var os = require('os')
-var dgram = require('dgram')
-var tape = require('tape')
-var afterAll = require('after-all')
-var Service = require('../lib/service')
-var Bonjour = require('../')
+const os = require('os')
+const dgram = require('dgram')
+const tape = require('tape')
+const afterAll = require('after-all')
+const Service = require('../lib/service')
+const Bonjour = require('../')
 
-var getAddresses = function () {
-  var addresses = []
-  var itrs = os.networkInterfaces()
-  for (var i in itrs) {
-    var addrs = itrs[i]
-    for (var j in addrs) {
+const getAddresses = function () {
+  const addresses = []
+  const itrs = os.networkInterfaces()
+  for (const i in itrs) {
+    const addrs = itrs[i]
+    for (const j in addrs) {
       if (addrs[j].internal === false) {
         addresses.push(addrs[j].address)
       }
@@ -21,10 +21,10 @@ var getAddresses = function () {
   return addresses
 }
 
-var port = function (cb) {
-  var s = dgram.createSocket('udp4')
+const port = function (cb) {
+  const s = dgram.createSocket('udp4')
   s.bind(0, function () {
-    var port = s.address().port
+    const port = s.address().port
     s.on('close', function () {
       cb(port)
     })
@@ -32,7 +32,7 @@ var port = function (cb) {
   })
 }
 
-var test = function (name, fn) {
+const test = function (name, fn) {
   tape(name, function (t) {
     port(function (p) {
       fn(Bonjour({ ip: '127.0.0.1', port: p, multicast: false }), t)
@@ -41,7 +41,7 @@ var test = function (name, fn) {
 }
 
 test('bonjour.publish', function (bonjour, t) {
-  var service = bonjour.publish({ name: 'foo', type: 'bar', port: 3000 })
+  const service = bonjour.publish({ name: 'foo', type: 'bar', port: 3000 })
   t.ok(service instanceof Service)
   t.equal(service.published, false)
   service.on('up', function () {
@@ -53,7 +53,7 @@ test('bonjour.publish', function (bonjour, t) {
 
 test('bonjour.unpublishAll', function (bonjour, t) {
   t.test('published services', function (t) {
-    var service = bonjour.publish({ name: 'foo', type: 'bar', port: 3000 })
+    const service = bonjour.publish({ name: 'foo', type: 'bar', port: 3000 })
     service.on('up', function () {
       bonjour.unpublishAll(function (err) {
         t.error(err)
@@ -73,21 +73,21 @@ test('bonjour.unpublishAll', function (bonjour, t) {
 })
 
 test('bonjour.find', function (bonjour, t) {
-  var next = afterAll(function () {
-    var browser = bonjour.find({ type: 'test' })
-    var ups = 0
+  const next = afterAll(function () {
+    const browser = bonjour.find({ type: 'test' })
+    let ups = 0
 
     browser.on('up', function (s) {
       if (s.name === 'Foo Bar') {
         t.equal(s.name, 'Foo Bar')
         t.equal(s.fqdn, 'Foo Bar._test._tcp.local')
         t.deepEqual(s.txt, {})
-        t.deepEqual(s.rawTxt, new Buffer('00', 'hex'))
+        t.deepEqual(s.rawTxt, Buffer.from('00', 'hex'))
       } else {
         t.equal(s.name, 'Baz')
         t.equal(s.fqdn, 'Baz._test._tcp.local')
         t.deepEqual(s.txt, { foo: 'bar' })
-        t.deepEqual(s.rawTxt, new Buffer('07666f6f3d626172', 'hex'))
+        t.deepEqual(s.rawTxt, Buffer.from('07666f6f3d626172', 'hex'))
       }
       t.equal(s.host, os.hostname())
       t.equal(s.port, 3000)
@@ -117,26 +117,26 @@ test('bonjour.find', function (bonjour, t) {
 })
 
 test('bonjour.find - binary txt', function (bonjour, t) {
-  var next = afterAll(function () {
-    var browser = bonjour.find({ type: 'test', txt: { binary: true } })
+  const next = afterAll(function () {
+    const browser = bonjour.find({ type: 'test', txt: { binary: true } })
 
     browser.on('up', function (s) {
       t.equal(s.name, 'Foo')
-      t.deepEqual(s.txt, { bar: new Buffer('buz') })
-      t.deepEqual(s.rawTxt, new Buffer('076261723d62757a', 'hex'))
+      t.deepEqual(s.txt, { bar: Buffer.from('buz') })
+      t.deepEqual(s.rawTxt, Buffer.from('076261723d62757a', 'hex'))
       bonjour.destroy()
       t.end()
     })
   })
 
-  bonjour.publish({ name: 'Foo', type: 'test', port: 3000, txt: { bar: new Buffer('buz') } }).on('up', next())
+  bonjour.publish({ name: 'Foo', type: 'test', port: 3000, txt: { bar: Buffer.from('buz') } }).on('up', next())
 })
 
 test('bonjour.find - down event', function (bonjour, t) {
-  var service = bonjour.publish({ name: 'Foo Bar', type: 'test', port: 3000 })
+  const service = bonjour.publish({ name: 'Foo Bar', type: 'test', port: 3000 })
 
   service.on('up', function () {
-    var browser = bonjour.find({ type: 'test' })
+    const browser = bonjour.find({ type: 'test' })
 
     browser.on('up', function (s) {
       t.equal(s.name, 'Foo Bar')
@@ -152,7 +152,7 @@ test('bonjour.find - down event', function (bonjour, t) {
 })
 
 test('bonjour.findOne - callback', function (bonjour, t) {
-  var next = afterAll(function () {
+  const next = afterAll(function () {
     bonjour.findOne({ type: 'test' }, function (s) {
       t.equal(s.name, 'Callback')
       bonjour.destroy()
@@ -165,8 +165,8 @@ test('bonjour.findOne - callback', function (bonjour, t) {
 })
 
 test('bonjour.findOne - emitter', function (bonjour, t) {
-  var next = afterAll(function () {
-    var browser = bonjour.findOne({ type: 'test' })
+  const next = afterAll(function () {
+    const browser = bonjour.findOne({ type: 'test' })
     browser.on('up', function (s) {
       t.equal(s.name, 'Emitter')
       bonjour.destroy()

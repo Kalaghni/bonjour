@@ -1,8 +1,8 @@
 'use strict'
 
-var Registry = require('./lib/registry')
-var Server = require('./lib/mdns-server')
-var Browser = require('./lib/browser')
+const Registry = require('./lib/registry')
+const Server = require('./lib/mdns-server')
+const Browser = require('./lib/browser')
 
 module.exports = Bonjour
 
@@ -25,7 +25,7 @@ Bonjour.prototype.find = function (opts, onup) {
 }
 
 Bonjour.prototype.findOne = function (opts, cb) {
-  var browser = new Browser(this._server.mdns, opts)
+  const browser = new Browser(this._server.mdns, opts)
   browser.once('up', function (service) {
     browser.stop()
     if (cb) cb(service)
