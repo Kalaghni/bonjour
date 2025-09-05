@@ -177,3 +177,59 @@ test('bonjour.findOne - emitter', function (bonjour, t) {
   bonjour.publish({ name: 'Emitter', type: 'test', port: 3000 }).on('up', next())
   bonjour.publish({ name: 'Invalid', type: 'test2', port: 3000 }).on('up', next())
 })
+
+test('wildcard browser discovers services from additional records', function (bonjour, t) {
+  const mdns = bonjour._server.mdns
+
+  const browser = bonjour.find({})
+
+  browser.on('up', function (s) {
+    t.equal(s.name, 'Foobar')
+    mdns.removeListener('query', onquery)
+    bonjour.destroy()
+    t.end()
+  })
+
+  mdns.on('query', onquery)
+
+  function onquery (packet, rinfo) {
+    packet.questions.forEach(function (q) {
+      if (q.type === 'PTR' && q.name === '_services._dns-sd._udp.local') {
+        mdns.emit('response', {
+          answers: [],
+          additionals: [{
+            name: '_services._dns-sd._udp.local',
+            type: 'PTR',
+            ttl: 28800,
+            data: '_test._tcp.local'
+          }]
+        }, rinfo)
+      } else if (q.type === 'PTR' && q.name === '_test._tcp.local') {
+        mdns.emit('response', {
+          answers: [{
+            name: '_test._tcp.local',
+            type: 'PTR',
+            ttl: 28800,
+            data: 'Foobar._test._tcp.local'
+          }],
+          additionals: [{
+            name: 'Foobar._test._tcp.local',
+            type: 'SRV',
+            ttl: 120,
+            data: { port: 3000, target: os.hostname() }
+          }, {
+            name: 'Foobar._test._tcp.local',
+            type: 'TXT',
+            ttl: 4500,
+            data: Buffer.from('00', 'hex')
+          }, {
+            name: os.hostname(),
+            type: 'A',
+            ttl: 120,
+            data: '127.0.0.1'
+          }]
+        }, rinfo)
+      }
+    })
+  }
+})
