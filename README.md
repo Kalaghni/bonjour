@@ -36,7 +36,7 @@
 ## Installation
 
 ```bash
-    npm i @joshtwc/bonjour
+npm i @joshtwc/bonjour
 ```
 
 ## Requirements
@@ -100,13 +100,13 @@ const bonjour = new Bonjour();
 Options
 
 ```
-    type?: 'udp4' | 'udp6'        // default: 'udp4'
-    interface?: string            // bind to a specific local IP (e.g., '192.168.1.10')
-    reuseAddr?: boolean           // default: true
-    loopback?: boolean            // default: true
-    domain?: string               // default: 'local'
-    instanceId?: string           // override per-process TXT id (for self-ignore)
-    jitter?: boolean              // add small TTL jitter; default: true
+type?: 'udp4' | 'udp6'        // default: 'udp4'
+interface?: string            // bind to a specific local IP (e.g., '192.168.1.10')
+reuseAddr?: boolean           // default: true
+loopback?: boolean            // default: true
+domain?: string               // default: 'local'
+instanceId?: string           // override per-process TXT id (for self-ignore)
+jitter?: boolean              // add small TTL jitter; default: true
 ```
 
 Methods
@@ -120,18 +120,18 @@ Methods
 Created by `bonjour.publish({...})`
 
 Options
-
-    name: string                  // instance label (left of the service type)
-    type: string                  // e.g., 'http' -> _http._tcp.local
-    port: number
-    protocol?: 'tcp' | 'udp'      // default: 'tcp'
-    host?: string                 // SRV target hostname (default: "<machine>.local")
-    txt?: Record<string, string | number | boolean>
-    subtypes?: string[]
-    domain?: string               // default: 'local'
-    disableIPv6?: boolean         // default: true
-    ttl?: number                  // default: 120
-
+```text
+name: string                  // instance label (left of the service type)
+type: string                  // e.g., 'http' -> _http._tcp.local
+port: number
+protocol?: 'tcp' | 'udp'      // default: 'tcp'
+host?: string                 // SRV target hostname (default: "<machine>.local")
+txt?: Record<string, string | number | boolean>
+subtypes?: string[]
+domain?: string               // default: 'local'
+disableIPv6?: boolean         // default: true
+ttl?: number                  // default: 120
+```
 Methods
 
 - `start()` — begin advertising (called automatically by `publish`).
@@ -146,12 +146,12 @@ Notes
 Created by `bonjour.find({...})`
 
 Options
-
-    type?: string                 // if omitted, wildcard discovery of types is used
-    protocol?: 'tcp' | 'udp'      // default: 'tcp'
-    domain?: string               // default: 'local'
-    subtypes?: string[]
-
+```text
+type?: string                 // if omitted, wildcard discovery of types is used
+protocol?: 'tcp' | 'udp'      // default: 'tcp'
+domain?: string               // default: 'local'
+subtypes?: string[]
+```
 Events
 
 - `'up'` — `(service: ServiceUp)` when a service becomes available
@@ -186,9 +186,9 @@ If you call `find({})` without a `type`, the browser first queries `_services._d
 ### Binding to a specific interface (Windows, multi‑NIC)
 
 When multiple adapters are present (VPN, Hyper‑V, WSL, Docker), you may want to force the mDNS socket to your LAN IPv4:
-
-    const bonjour = new Bonjour({ interface: '192.168.1.42' });
-
+```ts
+const bonjour = new Bonjour({ interface: '192.168.1.42' });
+```
 ### IPv6 notes
 
 By default the library advertises A (IPv4). If your network is IPv6‑only, run with `type: 'udp6'` and extend the announcement to include AAAA records.

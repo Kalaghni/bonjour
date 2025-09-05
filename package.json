@@ -1,6 +1,6 @@
 {
   "name": "@joshtwc/bonjour",
-  "version": "4.0.4",
+  "version": "4.0.5",
   "description": "A from-scratch, bonjour-like (mDNS + DNS-SD) library built on multicast-dns. Active discovery, proper goodbyes, self-ignore by TXT id, Windows-friendly.",
   "keywords": [
     "bonjour",
