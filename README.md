@@ -49,48 +49,48 @@
 ### Publish a service
 
 ```ts
-    import { Bonjour } from '@joshtwc/bonjour';
-    import crypto from 'node:crypto';
-    
-    const bonjour = new Bonjour();
-    
-    const service = bonjour.publish({
-      name: 'Paperless ' + crypto.randomUUID(),
-      type: 'twc-paperless',     // -> _twc-paperless._tcp.local
-      protocol: 'tcp',
-      port: 3003,
-      txt: { version: '1.2.3' }  // a TXT "id" is added automatically for self-ignore
-    });
-    
-    // Stop on exit
-    process.on('SIGINT', () => {
-      service.stop();
-      bonjour.destroy();
-      process.exit(0);
-    });
+import { Bonjour } from '@joshtwc/bonjour';
+import crypto from 'node:crypto';
+
+const bonjour = new Bonjour();
+
+const service = bonjour.publish({
+  name: 'Paperless ' + crypto.randomUUID(),
+  type: 'twc-paperless',     // -> _twc-paperless._tcp.local
+  protocol: 'tcp',
+  port: 3003,
+  txt: { version: '1.2.3' }  // a TXT "id" is added automatically for self-ignore
+});
+
+// Stop on exit
+process.on('SIGINT', () => {
+  service.stop();
+  bonjour.destroy();
+  process.exit(0);
+});
 ```
 
 ### Discover services
 
 ```ts
-    import { Bonjour } from '@joshtwc/bonjour';
-    
-    const bonjour = new Bonjour();
-    
-    const browser = bonjour.find({ type: 'twc-paperless', protocol: 'tcp' });
-    
-    browser.on('up',   (svc) => { console.log('UP', svc.name, svc.host, svc.port, svc.txt); });
-    browser.on('down', (svc) => { console.log('DOWN', svc.name); });
-    
-    // actively query now (already called on start, but you can poke again)
-    browser.update();
+import { Bonjour } from '@joshtwc/bonjour';
+
+const bonjour = new Bonjour();
+
+const browser = bonjour.find({ type: 'twc-paperless', protocol: 'tcp' });
+
+browser.on('up',   (svc) => { console.log('UP', svc.name, svc.host, svc.port, svc.txt); });
+browser.on('down', (svc) => { console.log('DOWN', svc.name); });
+
+// actively query now (already called on start, but you can poke again)
+browser.update();
 ```
 
 ### CommonJS usage
 
 ```js
-    const { Bonjour } = require('@joshtwc/bonjour');
-    const bonjour = new Bonjour();
+const { Bonjour } = require('@joshtwc/bonjour');
+const bonjour = new Bonjour();
 ```
 
 ## API
